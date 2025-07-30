@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>怪物猎人伤害计算器 (高级版)</title>
+    <title>怪物猎人数据/伤害计算器</title>
     <style>
+        /* 样式部分 (与之前版本基本相同，少量调整以适应更多内容) */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f7f6;
@@ -21,8 +22,8 @@
             padding: 30px 40px;
             border-radius: 10px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 700px; /* Increased max-width for more inputs */
+            width: 95%; /* 增加宽度以容纳更多内容 */
+            max-width: 800px; /* 进一步增加最大宽度 */
         }
 
         h1 {
@@ -51,19 +52,23 @@
             border: 1px solid #eee;
         }
 
+        .input-group {
+            margin-bottom: 15px;
+        }
+
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: bold;
             color: #555;
             font-size: 0.95em;
         }
 
         input[type="number"],
-        select {
+        select,
+        input[type="text"] { /* 增加对文本输入的支持 */
             width: calc(100% - 20px);
             padding: 10px;
-            margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
@@ -71,10 +76,46 @@
         }
 
         input[type="number"]:focus,
-        select:focus {
+        select:focus,
+        input[type="text"]:focus {
             border-color: #3498db;
             box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
             outline: none;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            gap: 15px; /* 间距 */
+        }
+
+        .flex-row > div {
+            flex: 1; /* 每个子元素占据等宽 */
+            min-width: 250px; /* 最小宽度，防止过窄 */
+        }
+
+        .hitzone-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .hitzone-table th, .hitzone-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .hitzone-table th {
+            background-color: #e2eafc;
+            font-weight: bold;
+        }
+        .hitzone-table input {
+            width: 60px; /* 缩小输入框宽度 */
+            padding: 5px;
+            margin-bottom: 0; /* 移除底部外边距 */
         }
 
         button {
@@ -121,165 +162,452 @@
             color: #d35400;
             font-weight: bold;
         }
+
+        .info-tip {
+            font-size: 0.8em;
+            color: #777;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>怪物猎人伤害计算器 (高级版)</h1>
+        <h1>怪物猎人数据/伤害计算器</h1>
 
         <div class="section">
-            <h2>武器及物理伤害信息</h2>
-            <label for="rawAttack">武器面板攻击力:</label>
-            <input type="number" id="rawAttack" value="300" min="0">
+            <h2>通用设置</h2>
+            <div class="input-group">
+                <label for="gameMode">模式:</label>
+                <select id="gameMode">
+                    <option value="solo">单人</option>
+                    <option value="team">团队</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="attackDirection">攻击方向:</label>
+                <select id="attackDirection">
+                    <option value="front">前方</option>
+                    <option value="back">后方</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="monsterSelect">魔物选择:</label>
+                <select id="monsterSelect" onchange="loadMonsterHitzones()">
+                    <option value="greatJagras">大凶豺龙</option>
+                    </select>
+            </div>
+        </div>
 
-            <label for="driftstoneAttack">漂流石/客制/聚魔加成 (固定值):</label>
-            <input type="number" id="driftstoneAttack" value="0" min="0">
+        <div class="section">
+            <h2>基础属性与技能加成</h2>
+            <div class="flex-row">
+                <div>
+                    <div class="input-group">
+                        <label for="baseHealth">体力:</label>
+                        <input type="number" id="baseHealth" value="100" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="friendHealthBonus">好友赠送体力:</label>
+                        <input type="number" id="friendHealthBonus" value="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="skillHealthBonus">技能增加体力:</label>
+                        <input type="number" id="skillHealthBonus" value="0" min="0">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label for="baseWeaponRawAttack">武器面板攻击力:</label>
+                        <input type="number" id="baseWeaponRawAttack" value="200" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="skillRawAttackBonus">技能增加攻击力 (固定值):</label>
+                        <input type="number" id="skillRawAttackBonus" value="0" min="0">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label for="baseWeaponElementAttack">武器面板属性攻击力:</label>
+                        <input type="number" id="baseWeaponElementAttack" value="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="skillElementAttackBonus">技能增加属性攻击力 (固定值):</label>
+                        <input type="number" id="skillElementAttackBonus" value="0" min="0">
+                    </div>
+                </div>
+            </div>
 
-            <label for="flatAttackBoosts">固定攻击力加成 (如攻击守势, 护符爪, 猫饭, 药水):</label>
-            <input type="number" id="flatAttackBoosts" value="0" min="0">
+            <div class="flex-row">
+                <div>
+                    <div class="input-group">
+                        <label for="baseAffinity">会心率 (%):</label>
+                        <input type="number" id="baseAffinity" value="0" min="-100" max="100">
+                    </div>
+                    <div class="input-group">
+                        <label for="skillAffinityBonus">技能增加会心率 (%):</label>
+                        <input type="number" id="skillAffinityBonus" value="0" min="-100" max="100">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label for="baseCritMultiplier">正会心倍率 (通常1.25):</label>
+                        <input type="number" id="baseCritMultiplier" value="1.25" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label for="skillCritMultiplierBonus">技能增加会心倍率 (如超会心, +0.05/级):</label>
+                        <input type="number" id="skillCritMultiplierBonus" value="0" step="0.01">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label for="baseDefense">防御力:</label>
+                        <input type="number" id="baseDefense" value="500" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="skillDefenseBonus">技能增加防御力:</label>
+                        <input type="number" id="skillDefenseBonus" value="0" min="0">
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <label for="attackPercentMultiplier">攻击力百分比倍率 (如挑战者, 怨恨, 攻击7%部分):</label>
-            <input type="number" id="attackPercentMultiplier" value="1.0" step="0.01">
+        <div class="section">
+            <h2>伤害相关乘数</h2>
+            <div class="flex-row">
+                <div>
+                    <div class="input-group">
+                        <label for="skillDamageMultiplier">技能增加伤害倍率 (如挑战者+20%写1.2):</label>
+                        <input type="number" id="skillDamageMultiplier" value="1.0" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label for="sharpnessMultiplier">斩味修正 (物理):</label>
+                        <select id="sharpnessMultiplier">
+                            <option value="0.5">红斩 (0.5)</option>
+                            <option value="0.75">橙斩 (0.75)</option>
+                            <option value="1.0">黄斩 (1.0)</option>
+                            <option value="1.05">绿斩 (1.05)</option>
+                            <option value="1.2">蓝斩 (1.2)</option>
+                            <option value="1.32" selected>白斩 (1.32)</option>
+                            <option value="1.39">紫斩 (1.39)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="motionValue">动作值 (MV, 百分比, 如50表示50):</label>
+                        <input type="number" id="motionValue" value="50" min="1" max="500">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label for="weaponSpPower">武器SP技能威力 (如太刀红刃1.2):</label>
+                        <input type="number" id="weaponSpPower" value="1.0" step="0.01">
+                        <span class="info-tip">影响最终伤害的特殊倍率</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="spGauge">SP计量表 (%):</label>
+                        <input type="number" id="spGauge" value="100" min="0" max="100">
+                        <span class="info-tip">例如太刀气刃槽，影响SP技能威力是否激活或程度</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="skillSpGaugeBonus">技能增加SP计量表 (%):</label>
+                        <input type="number" id="skillSpGaugeBonus" value="0" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <label for="sharpnessMultiplier">斩味修正 (物理):</label>
-            <select id="sharpnessMultiplier">
-                <option value="0.5">红斩 (0.5)</option>
-                <option value="0.75">橙斩 (0.75)</option>
-                <option value="1.0">黄斩 (1.0)</option>
-                <option value="1.05">绿斩 (1.05)</option>
-                <option value="1.2">蓝斩 (1.2)</option>
-                <option value="1.32" selected>白斩 (1.32)</option>
-                <option value="1.39">紫斩 (1.39)</option>
+        <div class="section">
+            <h2>异常状态</h2>
+            <div class="flex-row">
+                <div>
+                    <label>猎人异常状态:</label>
+                    <div class="input-group">
+                        <input type="checkbox" id="hunterStatusGhostfire">
+                        <label for="hunterStatusGhostfire">鬼火</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="checkbox" id="hunterStatusFoamDance">
+                        <label for="hunterStatusFoamDance">泡沫之舞</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="checkbox" id="hunterStatusTear">
+                        <label for="hunterStatusTear">撕裂</label>
+                    </div>
+                </div>
+                <div>
+                    <label>怪物异常状态:</label>
+                    <div class="input-group">
+                        <input type="checkbox" id="monsterStatusParalysis">
+                        <label for="monsterStatusParalysis">麻痺</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="checkbox" id="monsterStatusSleep">
+                        <label for="monsterStatusSleep">睡眠</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="checkbox" id="monsterStatusPoison">
+                        <label for="monsterStatusPoison">中毒</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="checkbox" id="monsterStatusStun">
+                        <label for="monsterStatusStun">晕眩</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>怪物肉质设置</h2>
+            <label for="attackPart">攻击部位:</label>
+            <select id="attackPart" onchange="updateHitzones()">
+                <option value="head">头</option>
+                <option value="leftHorn">左角</option>
+                <option value="rightHorn">右角</option>
+                <option value="snout">吻部</option>
+                <option value="neck">颈部</option>
+                <option value="belly">腹部</option>
+                <option value="back">背</option>
+                <option value="frontLeg">前脚</option>
+                <option value="backLeg">后脚</option>
+                <option value="wing">翼</option>
+                <option value="tail">尾巴</option>
+                <option value="tailTip">尾巴尖端</option>
             </select>
+            <span class="info-tip">肉质数值会根据选择的怪物和部位自动更新，你也可以手动修改。</span>
 
-            <label for="motionValue">动作值 (MV, 百分比, 如48表示48):</label>
-            <input type="number" id="motionValue" value="50" min="1" max="500">
-
-            <label for="affinity">会心率 (%):</label>
-            <input type="number" id="affinity" value="0" min="-100" max="100">
-
-            <label for="critMultiplier">正会心伤害修正 (通常1.25):</label>
-            <input type="number" id="critMultiplier" value="1.25" step="0.01">
-
-            <label for="negativeCritMultiplier">负会心伤害修正 (通常0.75):</label>
-            <input type="number" id="negativeCritMultiplier" value="0.75" step="0.01">
-
-            <label for="weaponSpPower">武器特殊威力修正 (SP, 如太刀红刃1.2, 默认1):</label>
-            <input type="number" id="weaponSpPower" value="1.0" step="0.01">
+            <table class="hitzone-table">
+                <thead>
+                    <tr>
+                        <th>肉质类型</th>
+                        <th>数值 (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>物理肉质 (斩击/打击/弹)</td>
+                        <td><input type="number" id="hitzoneRaw" value="45" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td>属性肉质 (火)</td>
+                        <td><input type="number" id="hitzoneElementFire" value="0" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td>属性肉质 (水)</td>
+                        <td><input type="number" id="hitzoneElementWater" value="0" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td>属性肉质 (雷)</td>
+                        <td><input type="number" id="hitzoneElementThunder" value="0" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td>属性肉质 (冰)</td>
+                        <td><input type="number" id="hitzoneElementIce" value="0" min="0" max="100"></td>
+                    </tr>
+                    <tr>
+                        <td>属性肉质 (龙)</td>
+                        <td><input type="number" id="hitzoneElementDragon" value="0" min="0" max="100"></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <div class="section">
-            <h2>属性伤害信息</h2>
-            <label for="elementAttack">武器面板属性攻击力:</label>
-            <input type="number" id="elementAttack" value="0" min="0">
-
-            <label for="elementalCritMultiplier">属性会心修正 (如真属性会心1.35, 无属会为1.0):</label>
-            <input type="number" id="elementalCritMultiplier" value="1.0" step="0.01">
-
-            <label for="flatElementBoosts">固定属性攻击力加成 (如属性强化技能):</label>
-            <input type="number" id="flatElementBoosts" value="0" min="0">
-
-            <label for="elementPercentMultiplier">属性攻击力百分比倍率 (如属性解放):</label>
-            <input type="number" id="elementPercentMultiplier" value="1.0" step="0.01">
-
-            <label for="elementMultiplier">属性斩味修正 (通常0.25~1.2, 与物理不同):</label>
-            <input type="number" id="elementMultiplier" value="1.0" step="0.01">
-        </div>
-
-        <div class="section">
-            <h2>怪物肉质信息</h2>
-            <label for="hitzoneRaw">肉质 (物理) (%):</label>
-            <input type="number" id="hitzoneRaw" value="45" min="0" max="100">
-
-            <label for="hitzoneElement">肉质 (属性) (%):</label>
-            <input type="number" id="hitzoneElement" value="20" min="0" max="100">
-        </div>
-
-        <button onclick="calculateDamage()">计算伤害</button>
+        <button onclick="calculateData()">计算所有数据</button>
 
         <div class="result-section">
             <h2>计算结果</h2>
+            <p>最终总体力: <span id="finalTotalHealth">0</span></p>
+            <p>最终总防御力: <span id="finalTotalDefense">0</span></p>
+            <p>最终会心率 (期望): <span id="finalAffinityRate">0%</span></p>
             <p>最终物理伤害: <span id="finalRawDamage">0</span></p>
             <p>最终属性伤害: <span id="finalElementDamage">0</span></p>
             <p>总伤害: <span id="totalDamage">0</span></p>
-            <p style="font-size:0.8em; color:#777;">注意：此计算器基于提供的公式，并假设SP威力、动作值、肉质等对最终总伤害的计算方式。不同游戏版本和招式细节可能有所差异。</p>
         </div>
     </div>
 
     <script>
-        function calculateDamage() {
-            // --- 获取物理伤害相关输入 ---
-            const rawAttack = parseFloat(document.getElementById('rawAttack').value);
-            const driftstoneAttack = parseFloat(document.getElementById('driftstoneAttack').value || 0);
-            const flatAttackBoosts = parseFloat(document.getElementById('flatAttackBoosts').value || 0);
-            const attackPercentMultiplier = parseFloat(document.getElementById('attackPercentMultiplier').value || 1.0);
-            const sharpnessMultiplier = parseFloat(document.getElementById('sharpnessMultiplier').value);
+        // 魔物肉质数据 (示例：大凶豺龙)
+        // 注意：这里的肉质数据仅为示例，你需要根据实际游戏数据进行填充
+        const MONSTER_HITZONES = {
+            'greatJagras': {
+                'head': { raw: 60, fire: 20, water: 0, thunder: 30, ice: 0, dragon: 0 },
+                'leftHorn': { raw: 30, fire: 10, water: 0, thunder: 20, ice: 0, dragon: 0 },
+                'rightHorn': { raw: 30, fire: 10, water: 0, thunder: 20, ice: 0, dragon: 0 },
+                'snout': { raw: 45, fire: 15, water: 0, thunder: 25, ice: 0, dragon: 0 },
+                'neck': { raw: 40, fire: 10, water: 0, thunder: 20, ice: 0, dragon: 0 },
+                'belly': { raw: 80, fire: 30, water: 0, thunder: 40, ice: 0, dragon: 0 }, // 膨胀的肚子是弱点
+                'back': { raw: 25, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
+                'frontLeg': { raw: 40, fire: 10, water: 0, thunder: 15, ice: 0, dragon: 0 },
+                'backLeg': { raw: 35, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
+                'wing': { raw: 20, fire: 0, water: 0, thunder: 5, ice: 0, dragon: 0 },
+                'tail': { raw: 25, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
+                'tailTip': { raw: 30, fire: 10, water: 0, thunder: 15, ice: 0, dragon: 0 },
+            }
+            // 以后可以在这里添加更多魔物的肉质数据
+            /*
+            'anotherMonster': {
+                'head': { raw: 50, fire: 10, water: 15, thunder: 5, ice: 20, dragon: 0 },
+                // ...更多部位
+            }
+            */
+        };
+
+        // 页面加载时初始化肉质
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMonsterHitzones();
+        });
+
+        // 根据选择的怪物和部位更新肉质数值
+        function loadMonsterHitzones() {
+            const monster = document.getElementById('monsterSelect').value;
+            const part = document.getElementById('attackPart').value;
+
+            if (MONSTER_HITZONES[monster] && MONSTER_HITZONES[monster][part]) {
+                const hitzones = MONSTER_HITZONES[monster][part];
+                document.getElementById('hitzoneRaw').value = hitzones.raw;
+                document.getElementById('hitzoneElementFire').value = hitzones.fire;
+                document.getElementById('hitzoneElementWater').value = hitzones.water;
+                document.getElementById('hitzoneElementThunder').value = hitzones.thunder;
+                document.getElementById('hitzoneElementIce').value = hitzones.ice;
+                document.getElementById('hitzoneElementDragon').value = hitzones.dragon;
+            } else {
+                // 如果没有找到对应数据，则清空或设置为默认值
+                document.getElementById('hitzoneRaw').value = 0;
+                document.getElementById('hitzoneElementFire').value = 0;
+                document.getElementById('hitzoneElementWater').value = 0;
+                document.getElementById('hitzoneElementThunder').value = 0;
+                document.getElementById('hitzoneElementIce').value = 0;
+                document.getElementById('hitzoneElementDragon').value = 0;
+            }
+        }
+
+        function updateHitzones() {
+            loadMonsterHitzones(); // 当攻击部位改变时，重新加载肉质
+        }
+
+        function calculateData() {
+            // --- 获取基础属性和技能加成 ---
+            const baseHealth = parseFloat(document.getElementById('baseHealth').value);
+            const friendHealthBonus = parseFloat(document.getElementById('friendHealthBonus').value || 0);
+            const skillHealthBonus = parseFloat(document.getElementById('skillHealthBonus').value || 0);
+
+            const baseWeaponRawAttack = parseFloat(document.getElementById('baseWeaponRawAttack').value);
+            const skillRawAttackBonus = parseFloat(document.getElementById('skillRawAttackBonus').value || 0);
+
+            const baseWeaponElementAttack = parseFloat(document.getElementById('baseWeaponElementAttack').value);
+            const skillElementAttackBonus = parseFloat(document.getElementById('skillElementAttackBonus').value || 0);
+
+            const baseAffinity = parseFloat(document.getElementById('baseAffinity').value);
+            const skillAffinityBonus = parseFloat(document.getElementById('skillAffinityBonus').value || 0);
+
+            const baseCritMultiplier = parseFloat(document.getElementById('baseCritMultiplier').value);
+            const skillCritMultiplierBonus = parseFloat(document.getElementById('skillCritMultiplierBonus').value || 0);
+            const negativeCritMultiplier = parseFloat(document.getElementById('negativeCritMultiplier').value || 0.75); // 负会心倍率
+
+            const baseDefense = parseFloat(document.getElementById('baseDefense').value);
+            const skillDefenseBonus = parseFloat(document.getElementById('skillDefenseBonus').value || 0);
+
+            // --- 获取伤害相关乘数 ---
+            const skillDamageMultiplier = parseFloat(document.getElementById('skillDamageMultiplier').value || 1.0); // 技能增加伤害倍率
+            const sharpnessMultiplier = parseFloat(document.getElementById('sharpnessMultiplier').value); // 斩味物理修正
             const motionValue = parseFloat(document.getElementById('motionValue').value);
-            const affinity = parseFloat(document.getElementById('affinity').value);
-            const critMultiplier = parseFloat(document.getElementById('critMultiplier').value);
-            const negativeCritMultiplier = parseFloat(document.getElementById('negativeCritMultiplier').value);
-            const weaponSpPower = parseFloat(document.getElementById('weaponSpPower').value || 1.0);
+            const weaponSpPower = parseFloat(document.getElementById('weaponSpPower').value || 1.0); // 武器SP技能威力
+            const spGauge = parseFloat(document.getElementById('spGauge').value || 0); // SP计量表
+            const skillSpGaugeBonus = parseFloat(document.getElementById('skillSpGaugeBonus').value || 0); // 技能增加SP计量表
+
+            // --- 怪物/环境信息 ---
+            const gameMode = document.getElementById('gameMode').value; // 单人/团队
+            const attackDirection = document.getElementById('attackDirection').value; // 前方/后方
+            // 这里我们不再直接获取hitzoneRaw/Element，而是通过loadMonsterHitzones获取
             const hitzoneRaw = parseFloat(document.getElementById('hitzoneRaw').value) / 100;
 
-            // --- 获取属性伤害相关输入 ---
-            const elementAttack = parseFloat(document.getElementById('elementAttack').value);
-            const elementalCritMultiplier = parseFloat(document.getElementById('elementalCritMultiplier').value || 1.0);
-            const flatElementBoosts = parseFloat(document.getElementById('flatElementBoosts').value || 0);
-            const elementPercentMultiplier = parseFloat(document.getElementById('elementPercentMultiplier').value || 1.0);
-            const elementMultiplier = parseFloat(document.getElementById('elementMultiplier').value); // 属性斩味修正
-            const hitzoneElement = parseFloat(document.getElementById('hitzoneElement').value) / 100;
+            // 选择哪种属性肉质取决于你的武器属性类型。这里简化为只使用火属性肉质作为示例，实际需根据武器属性判断
+            // 你需要根据武器的实际属性来选择对应的肉质，例如如果武器是水属性，就用hitzoneElementWater
+            // 这里为了演示，我们先假设武器是火属性（或者你可以添加一个武器属性类型选择器）
+            const hitzoneElement = parseFloat(document.getElementById('hitzoneElementFire').value) / 100; // 假设使用火属性肉质
 
-            // --- 物理伤害计算 ---
-            // 公式： (武器攻击 + 漂流石攻击) * 攻击%类 + 增攻类
-            let baseEffectiveRaw = (rawAttack + driftstoneAttack) * attackPercentMultiplier + flatAttackBoosts;
+            // --- 异常状态 ---
+            const hunterStatusGhostfire = document.getElementById('hunterStatusGhostfire').checked;
+            const hunterStatusFoamDance = document.getElementById('hunterStatusFoamDance').checked;
+            const hunterStatusTear = document.getElementById('hunterStatusTear').checked;
 
+            const monsterStatusParalysis = document.getElementById('monsterStatusParalysis').checked;
+            const monsterStatusSleep = document.getElementById('monsterStatusSleep').checked;
+            const monsterStatusPoison = document.getElementById('monsterStatusPoison').checked;
+            const monsterStatusStun = document.getElementById('monsterStatusStun').checked;
+
+            // --- 数据计算 ---
+
+            // 1. 体力计算
+            const finalTotalHealth = baseHealth + friendHealthBonus + skillHealthBonus;
+
+            // 2. 防御力计算
+            const finalTotalDefense = baseDefense + skillDefenseBonus;
+
+            // 3. 会心率计算 (最终会心率)
+            let totalAffinity = baseAffinity + skillAffinityBonus;
+            // 会心率通常有上限（如100%），但这里为了简化先不设限
+            totalAffinity = Math.max(-100, Math.min(100, totalAffinity)); // 限制在-100%到100%
+
+            // 4. 会心倍率计算 (物理伤害)
+            const finalCritMultiplier = baseCritMultiplier + skillCritMultiplierBonus;
+
+            // 5. SP计量表计算 (简单相加)
+            const finalSpGauge = Math.min(100, spGauge + skillSpGaugeBonus); // SP计量表通常有上限
+
+            // --- 伤害计算 (遵循上次提供的公式框架，并整合新变量) ---
+
+            // 物理伤害部分
+            // (武器攻击 + 技能增加攻击力) * 技能增加伤害倍率 (攻击%类)
+            let effectiveRawAttack = (baseWeaponRawAttack + skillRawAttackBonus) * skillDamageMultiplier;
+            
             // 应用斩味修正 (物理)
-            baseEffectiveRaw *= sharpnessMultiplier;
-
-            // 应用动作值
-            let rawDamageBeforeCrit = baseEffectiveRaw * (motionValue / 100); // 动作值通常是百分比，如50，这里除以100变为0.5
+            effectiveRawAttack *= sharpnessMultiplier;
+            
+            // 应用动作值 (MV)
+            effectiveRawAttack *= (motionValue / 100);
 
             // 应用肉质 (物理)
-            rawDamageBeforeCrit *= hitzoneRaw;
-            
-            // 应用会心 (期望值)
+            let rawDamageBeforeCrit = effectiveRawAttack * hitzoneRaw;
+
+            // 会心期望值计算 (物理伤害)
             let finalRawDamage;
-            if (affinity > 0) {
-                finalRawDamage = rawDamageBeforeCrit * (1 + (affinity / 100) * (critMultiplier - 1));
-            } else if (affinity < 0) {
-                finalRawDamage = rawDamageBeforeCrit * (1 + (affinity / 100) * (negativeCritMultiplier - 1));
+            if (totalAffinity > 0) {
+                finalRawDamage = rawDamageBeforeCrit * (1 + (totalAffinity / 100) * (finalCritMultiplier - 1));
+            } else if (totalAffinity < 0) {
+                finalRawDamage = rawDamageBeforeCrit * (1 + (totalAffinity / 100) * (negativeCritMultiplier - 1));
             } else {
                 finalRawDamage = rawDamageBeforeCrit;
             }
 
-            // --- 属性伤害计算 ---
-            // 属性攻击力面板值通常需要除以10 (MHW/IB标准)
-            let effectiveElementAttack = elementAttack / 10;
+            // 属性伤害部分
+            // 武器面板属性通常要除以10 (MHW/IB标准) + 技能增加属性
+            let effectiveElementAttack = (baseWeaponElementAttack / 10) + (skillElementAttackBonus / 10); // 技能增加属性也除10？需确认游戏机制
 
-            // 公式： (武器属性 * 属会 + 属强) * 属性%类
-            effectiveElementAttack = (effectiveElementAttack * elementalCritMultiplier + flatElementBoosts) * elementPercentMultiplier;
+            // 假设没有属性会心和属性百分比倍率，或者它们已经整合到 baseWeaponElementAttack 或 skillElementAttackBonus 中
+            // 如果你的游戏版本有明确的属性会心倍率和属性百分比倍率，你需要在html中添加输入，并在此处计算
+            // For example: effectiveElementAttack = (effectiveElementAttack * elementalCritMultiplier) * elementPercentMultiplier;
+            
+            // 属性斩味修正 (这里假设斩味修正适用于所有属性，如果你有多种属性，需要多选框来选择武器属性)
+            // 这里的 elementMultiplier 是通用属性斩味修正，如果需要更细致的属性斩味，需再添加输入
+            effectiveElementAttack *= 1.0; // 假设这里没有额外的属性斩味修正，或已包含在其他输入中
 
-            // 应用属性斩味修正
-            effectiveElementAttack *= elementMultiplier;
+            // 应用属性肉质
+            let finalElementDamage = effectiveElementAttack * hitzoneElement;
 
-            // 应用肉质 (属性)
-            effectiveElementAttack *= hitzoneElement;
 
-            let finalElementDamage = effectiveElementAttack;
-
-            // --- 总伤害及最终修正 ---
-            // 根据您提供的公式： [Raw部分] + [Elemental部分] 再乘以 SP威力。
-            // 假设 weaponSpPower 是对最终总伤害的额外乘法修正
+            // SP技能威力 (假设它是一个最终的总伤害乘数)
             let totalDamage = finalRawDamage + finalElementDamage;
-            totalDamage *= weaponSpPower;
+            // 仅当SP计量表达到一定阈值时才应用SP技能威力
+            if (finalSpGauge >= 100) { // 假设SP技能威力在SP计量表满时激活
+                 totalDamage *= weaponSpPower;
+            }
 
 
-            // 四舍五入到两位小数
-            finalRawDamage = Math.round(finalRawDamage * 100) / 100;
-            finalElementDamage = Math.round(finalElementDamage * 100) / 100;
-            totalDamage = Math.round(totalDamage * 100) / 100;
-
-            // 显示结果
+            // --- 显示结果 ---
+            document.getElementById('finalTotalHealth').textContent = finalTotalHealth.toFixed(0);
+            document.getElementById('finalTotalDefense').textContent = finalTotalDefense.toFixed(0);
+            document.getElementById('finalAffinityRate').textContent = totalAffinity.toFixed(0) + "%";
             document.getElementById('finalRawDamage').textContent = finalRawDamage.toFixed(2);
             document.getElementById('finalElementDamage').textContent = finalElementDamage.toFixed(2);
             document.getElementById('totalDamage').textContent = totalDamage.toFixed(2);
