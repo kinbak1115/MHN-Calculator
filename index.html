@@ -181,10 +181,32 @@
         .hitzone-table tbody {
             flex-grow: 1;
         }
+
+        .nav-links {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .nav-links a:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="nav-links">
+            <a href="monster_hitzones.html">管理怪物肉质数据</a>
+        </div>
+
         <h1>怪物猎人数据/伤害计算器</h1>
 
         <div class="section">
@@ -206,26 +228,13 @@
             <div class="input-group">
                 <label for="monsterSelect">魔物选择:</label>
                 <select id="monsterSelect" onchange="loadMonsterHitzones()">
-                    <option value="greatJagras">大凶豺龙</option>
                     </select>
             </div>
             <div class="input-group">
                 <label for="attackPart">攻击部位:</label>
                 <select id="attackPart" onchange="updateHitzones()">
-                    <option value="head">头</option>
-                    <option value="leftHorn">左角</option>
-                    <option value="rightHorn">右角</option>
-                    <option value="snout">吻部</option>
-                    <option value="neck">颈部</option>
-                    <option value="belly">腹部</option>
-                    <option value="back">背</option>
-                    <option value="frontLeg">前脚</option>
-                    <option value="backLeg">后脚</option>
-                    <option value="wing">翼</option>
-                    <option value="tail">尾巴</option>
-                    <option value="tailTip">尾巴尖端</option>
-                </select>
-                <span class="info-tip">肉质数值会根据选择的怪物和部位自动更新，你也可以手动修改。</span>
+                    </select>
+                <span class="info-tip">物理肉质数值会根据选择的怪物和部位自动更新，你也可以手动修改。</span>
             </div>
             <div class="input-group">
                 <label for="weaponElementType">武器攻击属性:</label>
@@ -354,22 +363,16 @@
         </div>
 
         <div class="section">
-            <h2>怪物肉质设置</h2>
-            <table class="hitzone-table">
-                <thead>
-                    <tr>
-                        <th>肉质类型</th>
-                        <th>数值 (%)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>物理肉质 (斩击/打击/弹)</td>
-                        <td><input type="number" id="hitzoneRaw" value="45" min="0" max="100"></td>
-                    </tr>
-                    </tbody>
-            </table>
-            <span class="info-tip" style="margin-top: 10px;">属性肉质会根据选择的**武器攻击属性**自动从魔物数据中读取。</span>
+            <h2>当前部位肉质</h2>
+            <div class="input-group">
+                <label for="hitzoneRaw">物理肉质 (斩击/打击/弹, %):</label>
+                <input type="number" id="hitzoneRaw" value="45" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="hitzoneElementDisplay">当前属性肉质 (根据武器属性自动读取, %):</label>
+                <input type="text" id="hitzoneElementDisplay" value="0" readonly>
+            </div>
+            <span class="info-tip">属性肉质会根据选择的**武器攻击属性**自动从魔物数据中读取，此处仅供查看。</span>
         </div>
 
         <button onclick="calculateData()">计算所有数据</button>
@@ -387,56 +390,125 @@
     </div>
 
     <script>
-        // 魔物肉质数据 (示例：大凶豺龙)
-        // 注意：这里的肉质数据仅为示例，你需要根据实际游戏数据进行填充
-        // 每个部位需要包含所有属性的肉质
-        const MONSTER_HITZONES = {
+        // 默认的怪物肉质数据，如果localStorage中没有，则使用此数据初始化
+        const DEFAULT_MONSTER_HITZONES = {
             'greatJagras': {
-                'head': { raw: 60, fire: 20, water: 0, thunder: 30, ice: 0, dragon: 0 },
-                'leftHorn': { raw: 30, fire: 10, water: 0, thunder: 20, ice: 0, dragon: 0 },
-                'rightHorn': { raw: 30, fire: 10, water: 0, thunder: 20, ice: 0, dragon: 0 },
-                'snout': { raw: 45, fire: 15, water: 0, thunder: 25, ice: 0, dragon: 0 },
-                'neck': { raw: 40, fire: 10, water: 0, thunder: 20, ice: 0, dragon: 0 },
-                'belly': { raw: 80, fire: 30, water: 0, thunder: 40, ice: 0, dragon: 0 }, // 膨胀的肚子是弱点
-                'back': { raw: 25, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
-                'frontLeg': { raw: 40, fire: 10, water: 0, thunder: 15, ice: 0, dragon: 0 },
-                'backLeg': { raw: 35, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
-                'wing': { raw: 20, fire: 0, water: 0, thunder: 5, ice: 0, dragon: 0 },
-                'tail': { raw: 25, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
-                'tailTip': { raw: 30, fire: 10, water: 0, thunder: 15, ice: 0, dragon: 0 },
-            }
-            // 以后可以在这里添加更多魔物的肉质数据
-            /*
-            'anotherMonster': {
-                'head': { raw: 50, fire: 10, water: 15, thunder: 5, ice: 20, dragon: 0 },
-                // ...更多部位
-            }
-            */
+                name: '大凶豺龙',
+                parts: {
+                    'head': { name: '头', raw: 60, fire: 20, water: 0, thunder: 30, ice: 0, dragon: 0 },
+                    'belly': { name: '腹部', raw: 80, fire: 30, water: 0, thunder: 40, ice: 0, dragon: 0 }, // 膨胀的肚子是弱点
+                    'neck': { name: '颈部', raw: 40, fire: 10, water: 0, thunder: 20, ice: 0, dragon: 0 },
+                    'frontLeg': { name: '前脚', raw: 40, fire: 10, water: 0, thunder: 15, ice: 0, dragon: 0 },
+                    'backLeg': { name: '后脚', raw: 35, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
+                    'tail': { name: '尾巴', raw: 25, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
+                    // 示例：可以添加更多部位，或者根据用户需要定义
+                }
+            },
+            // 更多魔物可以在monster_hitzones.html中添加
         };
 
-        // 页面加载时初始化肉质
+        let monsterHitzonesData = {}; // 全局变量，用于存储从localStorage加载的数据
+
         document.addEventListener('DOMContentLoaded', () => {
-            loadMonsterHitzones();
+            loadMonsterData();
+            populateMonsterSelect();
+            // 确保在页面加载时选中第一个怪物，并加载其肉质
+            const monsterSelect = document.getElementById('monsterSelect');
+            if (monsterSelect.options.length > 0) {
+                monsterSelect.value = monsterSelect.options[0].value;
+                loadMonsterHitzones();
+            } else {
+                // 如果没有怪物数据，清空部位选择和肉质显示
+                document.getElementById('attackPart').innerHTML = '<option value="">无部位可选</option>';
+                document.getElementById('hitzoneRaw').value = 0;
+                document.getElementById('hitzoneElementDisplay').value = 0;
+            }
         });
 
-        // 根据选择的怪物和部位更新肉质数值
-        // 由于移除了属性肉质输入框，此函数只更新物理肉质
-        function loadMonsterHitzones() {
-            const monster = document.getElementById('monsterSelect').value;
-            const part = document.getElementById('attackPart').value;
-
-            if (MONSTER_HITZONES[monster] && MONSTER_HITZONES[monster][part]) {
-                const hitzones = MONSTER_HITZONES[monster][part];
-                document.getElementById('hitzoneRaw').value = hitzones.raw;
-                // 属性肉质不再在此处更新输入框，而是直接在 calculateData 中读取
+        // 从 localStorage 加载怪物数据，如果不存在则使用默认数据并保存
+        function loadMonsterData() {
+            const storedData = localStorage.getItem('monsterHitzonesData');
+            if (storedData) {
+                monsterHitzonesData = JSON.parse(storedData);
             } else {
-                document.getElementById('hitzoneRaw').value = 0;
+                monsterHitzonesData = DEFAULT_MONSTER_HITZONES;
+                saveMonsterData(); // 保存默认数据
             }
         }
 
-        function updateHitzones() {
-            loadMonsterHitzones(); // 当攻击部位改变时，重新加载肉质
+        // 保存怪物数据到 localStorage
+        function saveMonsterData() {
+            localStorage.setItem('monsterHitzonesData', JSON.stringify(monsterHitzonesData));
         }
+
+        // 填充魔物选择下拉菜单
+        function populateMonsterSelect() {
+            const monsterSelect = document.getElementById('monsterSelect');
+            monsterSelect.innerHTML = ''; // 清空现有选项
+
+            for (const key in monsterHitzonesData) {
+                const monster = monsterHitzonesData[key];
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = monster.name;
+                monsterSelect.appendChild(option);
+            }
+        }
+
+        // 根据选择的怪物更新部位选择和肉质数值
+        function loadMonsterHitzones() {
+            const monsterKey = document.getElementById('monsterSelect').value;
+            const attackPartSelect = document.getElementById('attackPart');
+            attackPartSelect.innerHTML = ''; // 清空现有部位选项
+
+            if (monsterHitzonesData[monsterKey]) {
+                const monster = monsterHitzonesData[monsterKey];
+                for (const partKey in monster.parts) {
+                    const part = monster.parts[partKey];
+                    const option = document.createElement('option');
+                    option.value = partKey;
+                    option.textContent = part.name;
+                    attackPartSelect.appendChild(option);
+                }
+                // 默认选择第一个部位
+                if (attackPartSelect.options.length > 0) {
+                    attackPartSelect.value = attackPartSelect.options[0].value;
+                }
+            } else {
+                 // 如果没有怪物数据，清空部位选择和肉质显示
+                document.getElementById('attackPart').innerHTML = '<option value="">无部位可选</option>';
+            }
+            updateHitzones(); // 更新肉质显示
+        }
+
+        // 更新物理肉质输入框和属性肉质显示
+        function updateHitzones() {
+            const monsterKey = document.getElementById('monsterSelect').value;
+            const partKey = document.getElementById('attackPart').value;
+            const weaponElementType = document.getElementById('weaponElementType').value;
+
+            const hitzoneRawInput = document.getElementById('hitzoneRaw');
+            const hitzoneElementDisplay = document.getElementById('hitzoneElementDisplay');
+
+            if (monsterHitzonesData[monsterKey] && monsterHitzonesData[monsterKey].parts[partKey]) {
+                const hitzones = monsterHitzonesData[monsterKey].parts[partKey];
+                hitzoneRawInput.value = hitzones.raw;
+
+                // 根据武器属性显示对应的属性肉质
+                if (weaponElementType !== 'none' && hitzones[weaponElementType] !== undefined) {
+                    hitzoneElementDisplay.value = hitzones[weaponElementType];
+                } else {
+                    hitzoneElementDisplay.value = 0;
+                }
+            } else {
+                hitzoneRawInput.value = 0;
+                hitzoneElementDisplay.value = 0;
+            }
+        }
+
+        // 当武器属性改变时也需要更新属性肉质显示
+        document.getElementById('weaponElementType').addEventListener('change', updateHitzones);
+
 
         function calculateData() {
             // --- 获取基础属性和技能加成 ---
@@ -470,16 +542,16 @@
             // --- 怪物/环境信息 ---
             const gameMode = document.getElementById('gameMode').value; // 单人/团队
             const attackDirection = document.getElementById('attackDirection').value; // 前方/后方
-            const monsterSelect = document.getElementById('monsterSelect').value;
-            const attackPart = document.getElementById('attackPart').value;
+            const monsterKey = document.getElementById('monsterSelect').value;
+            const partKey = document.getElementById('attackPart').value;
             const weaponElementType = document.getElementById('weaponElementType').value; // 武器攻击属性
 
             const hitzoneRaw = parseFloat(document.getElementById('hitzoneRaw').value) / 100;
 
             // 根据选择的武器属性，从魔物肉质数据中获取对应的属性肉质
             let hitzoneElement = 0;
-            if (weaponElementType !== 'none' && MONSTER_HITZONES[monsterSelect] && MONSTER_HITZONES[monsterSelect][attackPart]) {
-                hitzoneElement = MONSTER_HITZONES[monsterSelect][attackPart][weaponElementType] / 100;
+            if (weaponElementType !== 'none' && monsterHitzonesData[monsterKey] && monsterHitzonesData[monsterKey].parts[partKey]) {
+                hitzoneElement = monsterHitzonesData[monsterKey].parts[partKey][weaponElementType] / 100;
             }
 
             // --- 异常状态 ---
@@ -530,10 +602,9 @@
             let finalElementDamage = 0;
             if (weaponElementType !== 'none') { // 只有当选择了非“无”属性时才计算属性伤害
                 // 武器面板属性通常要除以10 (MHW/IB标准) + 技能增加属性
-                // 假设技能增加属性也除10，需根据游戏机制确认
                 let effectiveElementAttack = (baseWeaponElementAttack / 10) + (skillElementAttackBonus / 10); 
                 
-                // 属性斩味修正 (这里假设属性斩味修正为1.0，如果需要，请在HTML中添加相关输入并在此处引入)
+                // 属性斩味修正 (这里假设属性斩味修正为1.0)
                 effectiveElementAttack *= 1.0; 
 
                 // 应用属性肉质
