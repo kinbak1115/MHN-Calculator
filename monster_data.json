@@ -18,5 +18,4 @@
       "tail": { "name": "尾巴", "raw": 35, "fire": 0, "water": 20, "thunder": 10, "ice": 5, "dragon": 5 }
     }
   }
-  /* 您可以在这里添加更多怪物数据 */
 }
