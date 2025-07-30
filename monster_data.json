@@ -1,0 +1,22 @@
+{
+  "greatJagras": {
+    "name": "大凶豺龙",
+    "parts": {
+      "head": { "name": "头", "raw": 60, "fire": 20, "water": 0, "thunder": 30, "ice": 0, "dragon": 0 },
+      "belly": { "name": "腹部", "raw": 80, "fire": 30, "water": 0, "thunder": 40, "ice": 0, "dragon": 0 },
+      "neck": { "name": "颈部", "raw": 40, "fire": 10, "water": 0, "thunder": 20, "ice": 0, "dragon": 0 },
+      "frontLeg": { "name": "前脚", "raw": 40, "fire": 10, "water": 0, "thunder": 15, "ice": 0, "dragon": 0 },
+      "backLeg": { "name": "后脚", "raw": 35, "fire": 5, "water": 0, "thunder": 10, "ice": 0, "dragon": 0 },
+      "tail": { "name": "尾巴", "raw": 25, "fire": 5, "water": 0, "thunder": 10, "ice": 0, "dragon": 0 }
+    }
+  },
+  "rathalos": {
+    "name": "火龙",
+    "parts": {
+      "head": { "name": "头", "raw": 50, "fire": 0, "water": 25, "thunder": 15, "ice": 10, "dragon": 5 },
+      "wing": { "name": "翼", "raw": 45, "fire": 0, "water": 30, "thunder": 20, "ice": 15, "dragon": 10 },
+      "tail": { "name": "尾巴", "raw": 35, "fire": 0, "water": 20, "thunder": 10, "ice": 5, "dragon": 5 }
+    }
+  }
+  /* 您可以在这里添加更多怪物数据 */
+}
