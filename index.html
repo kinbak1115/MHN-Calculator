@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>怪物猎人伤害计算器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>怪物猎人伤害计算器</h1>
+
+        <div class="section">
+            <h2>武器信息</h2>
+            <label for="rawAttack">武器面板攻击力:</label>
+            <input type="number" id="rawAttack" value="200" min="0">
+
+            <label for="sharpnessMultiplier">斩味修正:</label>
+            <select id="sharpnessMultiplier">
+                <option value="0.5">红斩 (0.5)</option>
+                <option value="0.75">橙斩 (0.75)</option>
+                <option value="1.0">黄斩 (1.0)</option>
+                <option value="1.05">绿斩 (1.05)</option>
+                <option value="1.2">蓝斩 (1.2)</option>
+                <option value="1.32">白斩 (1.32)</option>
+                <option value="1.39">紫斩 (1.39)</option>
+            </select>
+
+            <label for="affinity">会心率 (%):</label>
+            <input type="number" id="affinity" value="0" min="-100" max="100">
+
+            <label for="critMultiplier">会心伤害修正 (通常1.25):</label>
+            <input type="number" id="critMultiplier" value="1.25" step="0.01">
+
+            <label for="elementAttack">武器属性攻击力 (面板):</label>
+            <input type="number" id="elementAttack" value="0" min="0">
+
+            <label for="elementMultiplier">属性斩味修正 (通常0.25~1.2):</label>
+            <input type="number" id="elementMultiplier" value="1.0" step="0.01">
+        </div>
+
+        <div class="section">
+            <h2>怪物信息</h2>
+            <label for="hitzoneRaw">肉质 (物理) (%):</label>
+            <input type="number" id="hitzoneRaw" value="45" min="0" max="100">
+
+            <label for="hitzoneElement">肉质 (属性) (%):</label>
+            <input type="number" id="hitzoneElement" value="20" min="0" max="100">
+        </div>
+
+        <div class="section">
+            <h2>技能/Buff加成 (仅举例，可根据需要增加)</h2>
+            <label for="attackBoost">攻击力提升 (固定值，如攻击7: +21):</label>
+            <input type="number" id="attackBoost" value="0" min="0">
+
+            <label for="attackMultiplier">攻击力倍率 (如挑战者+20%):</label>
+            <input type="number" id="attackMultiplier" value="1.0" step="0.01">
+        </div>
+
+        <button onclick="calculateDamage()">计算伤害</button>
+
+        <div class="result-section">
+            <h2>计算结果</h2>
+            <p>最终物理伤害: <span id="finalRawDamage">0</span></p>
+            <p>最终属性伤害: <span id="finalElementDamage">0</span></p>
+            <p>总伤害: <span id="totalDamage">0</span></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
