@@ -321,7 +321,7 @@
                 <label for="hitzoneElementDisplay">当前属性肉质 (根据武器属性自动读取, %):</label>
                 <input type="text" id="hitzoneElementDisplay" value="0" readonly>
             </div>
-            <span class="info-tip">肉质数值由作者内嵌，无法在此页面修改。</span>
+            <span class="info-tip">肉质数值由外部数据文件加载，无法在此页面修改。</span>
         </div>
 
         <button onclick="calculateData()">计算所有数据</button>
@@ -339,58 +339,38 @@
     </div>
 
     <script>
-        // *** 怪物肉质数据 (由您“上传”并在此处维护) ***
-        // 您需要在此处手动编辑和添加怪物及它们的肉質數據。
-        // 请确保每个部位包含 'name', 'raw', 'fire', 'water', 'thunder', 'ice', 'dragon' 属性。
-        // 'raw' 是物理肉质，其他是对应的属性肉质。
-        // 值应为百分比，例如 60 表示 60%。
-        const MONSTER_HITZONES_DATA = {
-            'greatJagras': {
-                name: '大凶豺龙',
-                parts: {
-                    'head': { name: '头', raw: 60, fire: 20, water: 0, thunder: 30, ice: 0, dragon: 0 },
-                    'belly': { name: '腹部', raw: 80, fire: 30, water: 0, thunder: 40, ice: 0, dragon: 0 },
-                    'neck': { name: '颈部', raw: 40, fire: 10, water: 0, thunder: 20, ice: 0, dragon: 0 },
-                    'frontLeg': { name: '前脚', raw: 40, fire: 10, water: 0, thunder: 15, ice: 0, dragon: 0 },
-                    'backLeg': { name: '后脚', raw: 35, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
-                    'tail': { name: '尾巴', raw: 25, fire: 5, water: 0, thunder: 10, ice: 0, dragon: 0 },
-                }
-            },
-            'rathalos': { // 示例：火龙
-                name: '火龙',
-                parts: {
-                    'head': { name: '头', raw: 50, fire: 0, water: 25, thunder: 15, ice: 10, dragon: 5 },
-                    'wing': { name: '翼', raw: 45, fire: 0, water: 30, thunder: 20, ice: 15, dragon: 10 },
-                    'tail': { name: '尾巴', raw: 35, fire: 0, water: 20, thunder: 10, ice: 5, dragon: 5 },
-                    // 添加火龙的其他部位...
-                }
-            }
-            // 您可以在这里添加更多怪物数据，例如：
-            /*
-            'anotherMonsterId': {
-                name: '另一个怪物名称',
-                parts: {
-                    'part1Id': { name: '部位1名称', raw: XX, fire: YY, water: ZZ, thunder: AA, ice: BB, dragon: CC },
-                    'part2Id': { name: '部位2名称', raw: XX, fire: YY, water: ZZ, thunder: AA, ice: BB, dragon: CC },
-                }
-            }
-            */
-        };
+        let MONSTER_HITZONES_DATA = {}; // 全局变量，用于存储从JSON文件加载的数据
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadMonsterData(); // 等待数据加载完成
             populateMonsterSelect();
-            // 确保在页面加载时选中第一个怪物，并加载其肉质
+            
             const monsterSelect = document.getElementById('monsterSelect');
             if (monsterSelect.options.length > 0) {
                 monsterSelect.value = monsterSelect.options[0].value;
                 loadMonsterHitzones();
             } else {
-                // 如果没有怪物数据，清空部位选择和肉质显示
                 document.getElementById('attackPart').innerHTML = '<option value="">无部位可选</option>';
                 document.getElementById('hitzoneRaw').value = 0;
                 document.getElementById('hitzoneElementDisplay').value = 0;
             }
         });
+
+        // 从 JSON 文件加载怪物数据
+        async function loadMonsterData() {
+            try {
+                const response = await fetch('monster_data.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                MONSTER_HITZONES_DATA = await response.json();
+                console.log("怪物数据加载成功:", MONSTER_HITZONES_DATA);
+            } catch (error) {
+                console.error("加载怪物数据失败:", error);
+                alert("加载怪物数据失败，请确保 'monster_data.json' 文件存在且格式正确。");
+                MONSTER_HITZONES_DATA = {}; // 确保数据为空对象，避免后续错误
+            }
+        }
 
         // 填充魔物选择下拉菜单
         function populateMonsterSelect() {
@@ -502,7 +482,7 @@
 
             // 根据选择的武器属性，从 MONSTER_HITZONES_DATA 中获取对应的属性肉质
             let hitzoneElement = 0;
-            if (weaponElementType !== 'none' && MONSTER_HITZONES_DATA[monsterKey] && MONSTER_HITZONES_DATA[monsterKey].parts[partKey]) {
+            if (MONSTER_HITZONES_DATA[monsterKey] && MONSTER_HITZONES_DATA[monsterKey].parts[partKey]) {
                 hitzoneElement = MONSTER_HITZONES_DATA[monsterKey].parts[partKey][weaponElementType] / 100;
             }
 
