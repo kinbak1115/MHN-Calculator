@@ -97,11 +97,6 @@
             outline: none;
         }
 
-        input[type="checkbox"] {
-            margin-right: 4px; /* 缩小间距 */
-            transform: scale(0.85); /* 进一步缩小checkbox */
-        }
-
         .hitzone-table {
             width: 100%;
             border-collapse: collapse;
@@ -232,6 +227,17 @@
                 </select>
                 <span class="info-tip">肉质数值会根据选择的怪物和部位自动更新，你也可以手动修改。</span>
             </div>
+            <div class="input-group">
+                <label for="weaponElementType">武器攻击属性:</label>
+                <select id="weaponElementType">
+                    <option value="none">无</option>
+                    <option value="fire">火</option>
+                    <option value="water">水</option>
+                    <option value="thunder">雷</option>
+                    <option value="ice">冰</option>
+                    <option value="dragon">龙</option>
+                </select>
+            </div>
         </div>
 
         <div class="section">
@@ -326,35 +332,24 @@
 
         <div class="section">
             <h2>异常状态</h2>
-            <label>猎人异常状态:</label>
             <div class="input-group">
-                <input type="checkbox" id="hunterStatusGhostfire">
-                <label for="hunterStatusGhostfire">鬼火</label>
+                <label for="hunterStatus">猎人异常状态:</label>
+                <select id="hunterStatus">
+                    <option value="none">无</option>
+                    <option value="ghostfire">鬼火</option>
+                    <option value="foamDance">泡沫之舞</option>
+                    <option value="tear">撕裂</option>
+                </select>
             </div>
             <div class="input-group">
-                <input type="checkbox" id="hunterStatusFoamDance">
-                <label for="hunterStatusFoamDance">泡沫之舞</label>
-            </div>
-            <div class="input-group">
-                <input type="checkbox" id="hunterStatusTear">
-                <label for="hunterStatusTear">撕裂</label>
-            </div>
-            <label>怪物异常状态:</label>
-            <div class="input-group">
-                <input type="checkbox" id="monsterStatusParalysis">
-                <label for="monsterStatusParalysis">麻痺</label>
-            </div>
-            <div class="input-group">
-                <input type="checkbox" id="monsterStatusSleep">
-                <label for="monsterStatusSleep">睡眠</label>
-            </div>
-            <div class="input-group">
-                <input type="checkbox" id="monsterStatusPoison">
-                <label for="monsterStatusPoison">中毒</label>
-            </div>
-            <div class="input-group">
-                <input type="checkbox" id="monsterStatusStun">
-                <label for="monsterStatusStun">晕眩</label>
+                <label for="monsterStatus">怪物异常状态:</label>
+                <select id="monsterStatus">
+                    <option value="none">无</option>
+                    <option value="paralysis">麻痺</option>
+                    <option value="sleep">睡眠</option>
+                    <option value="poison">中毒</option>
+                    <option value="stun">晕眩</option>
+                </select>
             </div>
         </div>
 
@@ -372,28 +367,9 @@
                         <td>物理肉质 (斩击/打击/弹)</td>
                         <td><input type="number" id="hitzoneRaw" value="45" min="0" max="100"></td>
                     </tr>
-                    <tr>
-                        <td>属性肉质 (火)</td>
-                        <td><input type="number" id="hitzoneElementFire" value="0" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td>属性肉质 (水)</td>
-                        <td><input type="number" id="hitzoneElementWater" value="0" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td>属性肉质 (雷)</td>
-                        <td><input type="number" id="hitzoneElementThunder" value="0" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td>属性肉质 (冰)</td>
-                        <td><input type="number" id="hitzoneElementIce" value="0" min="0" max="100"></td>
-                    </tr>
-                    <tr>
-                        <td>属性肉质 (龙)</td>
-                        <td><input type="number" id="hitzoneElementDragon" value="0" min="0" max="100"></td>
-                    </tr>
-                </tbody>
+                    </tbody>
             </table>
+            <span class="info-tip" style="margin-top: 10px;">属性肉质会根据选择的**武器攻击属性**自动从魔物数据中读取。</span>
         </div>
 
         <button onclick="calculateData()">计算所有数据</button>
@@ -413,6 +389,7 @@
     <script>
         // 魔物肉质数据 (示例：大凶豺龙)
         // 注意：这里的肉质数据仅为示例，你需要根据实际游戏数据进行填充
+        // 每个部位需要包含所有属性的肉质
         const MONSTER_HITZONES = {
             'greatJagras': {
                 'head': { raw: 60, fire: 20, water: 0, thunder: 30, ice: 0, dragon: 0 },
@@ -443,6 +420,7 @@
         });
 
         // 根据选择的怪物和部位更新肉质数值
+        // 由于移除了属性肉质输入框，此函数只更新物理肉质
         function loadMonsterHitzones() {
             const monster = document.getElementById('monsterSelect').value;
             const part = document.getElementById('attackPart').value;
@@ -450,19 +428,9 @@
             if (MONSTER_HITZONES[monster] && MONSTER_HITZONES[monster][part]) {
                 const hitzones = MONSTER_HITZONES[monster][part];
                 document.getElementById('hitzoneRaw').value = hitzones.raw;
-                document.getElementById('hitzoneElementFire').value = hitzones.fire;
-                document.getElementById('hitzoneElementWater').value = hitzones.water;
-                document.getElementById('hitzoneElementThunder').value = hitzones.thunder;
-                document.getElementById('hitzoneElementIce').value = hitzones.ice;
-                document.getElementById('hitzoneElementDragon').value = hitzones.dragon;
+                // 属性肉质不再在此处更新输入框，而是直接在 calculateData 中读取
             } else {
-                // 如果没有找到对应数据，则清空或设置为默认值
                 document.getElementById('hitzoneRaw').value = 0;
-                document.getElementById('hitzoneElementFire').value = 0;
-                document.getElementById('hitzoneElementWater').value = 0;
-                document.getElementById('hitzoneElementThunder').value = 0;
-                document.getElementById('hitzoneElementIce').value = 0;
-                document.getElementById('hitzoneElementDragon').value = 0;
             }
         }
 
@@ -502,20 +470,21 @@
             // --- 怪物/环境信息 ---
             const gameMode = document.getElementById('gameMode').value; // 单人/团队
             const attackDirection = document.getElementById('attackDirection').value; // 前方/后方
+            const monsterSelect = document.getElementById('monsterSelect').value;
+            const attackPart = document.getElementById('attackPart').value;
+            const weaponElementType = document.getElementById('weaponElementType').value; // 武器攻击属性
+
             const hitzoneRaw = parseFloat(document.getElementById('hitzoneRaw').value) / 100;
 
-            // 选择哪种属性肉质取决于你的武器属性类型。这里简化为只使用火属性肉质作为示例，实际需根据武器属性判断
-            const hitzoneElement = parseFloat(document.getElementById('hitzoneElementFire').value) / 100; // 假设使用火属性肉质
+            // 根据选择的武器属性，从魔物肉质数据中获取对应的属性肉质
+            let hitzoneElement = 0;
+            if (weaponElementType !== 'none' && MONSTER_HITZONES[monsterSelect] && MONSTER_HITZONES[monsterSelect][attackPart]) {
+                hitzoneElement = MONSTER_HITZONES[monsterSelect][attackPart][weaponElementType] / 100;
+            }
 
             // --- 异常状态 ---
-            const hunterStatusGhostfire = document.getElementById('hunterStatusGhostfire').checked;
-            const hunterStatusFoamDance = document.getElementById('hunterStatusFoamDance').checked;
-            const hunterStatusTear = document.getElementById('hunterStatusTear').checked;
-
-            const monsterStatusParalysis = document.getElementById('monsterStatusParalysis').checked;
-            const monsterStatusSleep = document.getElementById('monsterStatusSleep').checked;
-            const monsterStatusPoison = document.getElementById('monsterStatusPoison').checked;
-            const monsterStatusStun = document.getElementById('monsterStatusStun').checked;
+            const hunterStatus = document.getElementById('hunterStatus').value;
+            const monsterStatus = document.getElementById('monsterStatus').value;
 
             // --- 数据计算 ---
 
@@ -558,18 +527,22 @@
             }
 
             // 属性伤害部分
-            // 武器面板属性通常要除以10 (MHW/IB标准) + 技能增加属性
-            let effectiveElementAttack = (baseWeaponElementAttack / 10) + (skillElementAttackBonus / 10); 
-            
-            // 属性斩味修正 (这里假设属性斩味修正为1.0)
-            effectiveElementAttack *= 1.0; 
+            let finalElementDamage = 0;
+            if (weaponElementType !== 'none') { // 只有当选择了非“无”属性时才计算属性伤害
+                // 武器面板属性通常要除以10 (MHW/IB标准) + 技能增加属性
+                // 假设技能增加属性也除10，需根据游戏机制确认
+                let effectiveElementAttack = (baseWeaponElementAttack / 10) + (skillElementAttackBonus / 10); 
+                
+                // 属性斩味修正 (这里假设属性斩味修正为1.0，如果需要，请在HTML中添加相关输入并在此处引入)
+                effectiveElementAttack *= 1.0; 
 
-            // 应用属性肉质
-            let finalElementDamage = effectiveElementAttack * hitzoneElement;
+                // 应用属性肉质
+                finalElementDamage = effectiveElementAttack * hitzoneElement;
+            }
 
 
             // SP技能威力 (假设它是一个最终的总伤害乘数)
-            let totalDamage = finalRawDamage + finalElementAttack;
+            let totalDamage = finalRawDamage + finalElementDamage;
             // 仅当SP计量表达到一定阈值时才应用SP技能威力
             if (finalSpGauge >= 100) { // 假设SP技能威力在SP计量表满时激活
                  totalDamage *= weaponSpPower;
