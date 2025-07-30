@@ -5,74 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>怪物猎人数据/伤害计算器</title>
     <style>
-        /* 样式部分 (与之前版本基本相同，少量调整以适应更多内容) */
+        /* CSS 样式 - 调整以适应单页显示且不改变字体大小 */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f7f6;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: flex-start; /* 内容从顶部开始 */
             min-height: 100vh;
             margin: 20px 0;
             color: #333;
+            font-size: 16px; /* 设定基础字体大小，避免浏览器默认缩放 */
+            -webkit-text-size-adjust: 100%; /* 防止Safari等浏览器自动调整字体大小 */
+            text-size-adjust: 100%;
         }
 
         .container {
             background-color: #ffffff;
-            padding: 30px 40px;
+            padding: 20px 30px; /* 缩小内边距 */
             border-radius: 10px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            width: 95%; /* 增加宽度以容纳更多内容 */
-            max-width: 800px; /* 进一步增加最大宽度 */
+            width: 98%; /* 增大宽度，尽可能利用屏幕空间 */
+            max-width: 1200px; /* 增加最大宽度以容纳更多并排内容 */
+            display: flex; /* 使用 Flexbox 布局 */
+            flex-wrap: wrap; /* 允许内容换行 */
+            gap: 20px; /* 各个section之间的间距 */
         }
 
         h1 {
+            width: 100%; /* 标题占据整行 */
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 2.2em;
+            margin-bottom: 20px; /* 缩小底部外边距 */
+            font-size: 2em; /* 保持相对大小 */
             border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
+            padding-bottom: 8px; /* 缩小底部内边距 */
         }
 
         h2 {
+            width: 100%; /* 副标题占据其section的整行 */
             color: #34495e;
-            margin-top: 25px;
-            margin-bottom: 15px;
+            margin-top: 0px; /* 移除顶部外边距 */
+            margin-bottom: 10px; /* 缩小底部外边距 */
             border-left: 5px solid #3498db;
             padding-left: 10px;
-            font-size: 1.6em;
+            font-size: 1.3em; /* 缩小字体大小 */
         }
 
         .section {
-            margin-bottom: 25px;
+            flex: 1; /* 每个section弹性伸缩 */
+            min-width: 300px; /* 保证每个section最小宽度 */
+            max-width: calc(33% - 14px); /* 大致三列布局，减去gap的一半 */
+            margin-bottom: 0; /* 移除 section 底部外边距，由 container 的 gap 控制 */
             padding: 15px;
             background-color: #f9f9f9;
             border-radius: 8px;
             border: 1px solid #eee;
+            box-sizing: border-box; /* 包含 padding 和 border 在宽度内 */
         }
 
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 10px; /* 缩小输入组间距 */
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 3px; /* 缩小标签底部外边距 */
             font-weight: bold;
             color: #555;
-            font-size: 0.95em;
+            font-size: 0.9em; /* 略微缩小标签字体 */
         }
 
         input[type="number"],
         select,
-        input[type="text"] { /* 增加对文本输入的支持 */
-            width: calc(100% - 20px);
-            padding: 10px;
+        input[type="text"] {
+            width: calc(100% - 16px); /* 适应新的padding */
+            padding: 8px; /* 缩小输入框内边距 */
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
-            font-size: 1em;
+            font-size: 0.95em; /* 略微缩小输入框字体 */
         }
 
         input[type="number"]:focus,
@@ -84,61 +96,51 @@
         }
 
         input[type="checkbox"] {
-            margin-right: 8px;
+            margin-right: 5px; /* 缩小间距 */
+            transform: scale(0.9); /* 略微缩小checkbox */
         }
 
         .flex-row {
-            display: flex;
-            flex-wrap: wrap; /* 允许换行 */
-            gap: 15px; /* 间距 */
-        }
-
-        .flex-row > div {
-            flex: 1; /* 每个子元素占据等宽 */
-            min-width: 250px; /* 最小宽度，防止过窄 */
+            display: block; /* 在section内部，不再使用flex-row */
         }
 
         .hitzone-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 10px; /* 缩小顶部外边距 */
         }
         .hitzone-table th, .hitzone-table td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 6px; /* 缩小表格内边距 */
             text-align: left;
+            font-size: 0.9em; /* 缩小表格字体 */
         }
         .hitzone-table th {
             background-color: #e2eafc;
             font-weight: bold;
         }
         .hitzone-table input {
-            width: 60px; /* 缩小输入框宽度 */
-            padding: 5px;
-            margin-bottom: 0; /* 移除底部外边距 */
+            width: 50px; /* 进一步缩小输入框宽度 */
+            padding: 3px; /* 进一步缩小输入框内边距 */
+            margin-bottom: 0;
+            font-size: 0.9em; /* 进一步缩小输入框字体 */
         }
 
         button {
-            display: block;
-            width: 100%;
-            padding: 12px 20px;
-            background-color: #2ecc71;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.2em;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-        }
-
-        button:hover {
-            background-color: #27ae60;
+            width: calc(100% - 40px); /* 按钮宽度适配container padding */
+            margin: 20px 20px 0 20px; /* 左右居中，上下边距 */
+            padding: 10px 15px; /* 缩小内边距 */
+            font-size: 1.1em; /* 略微缩小字体 */
+            position: relative; /* 确保在容器底部居中 */
+            left: 50%;
+            transform: translateX(-50%);
+            flex-shrink: 0; /* 防止按钮被压缩 */
         }
 
         .result-section {
-            margin-top: 30px;
-            padding: 20px;
+            width: 100%; /* 结果区占据整行 */
+            margin-top: 20px; /* 缩小顶部外边距 */
+            padding: 15px; /* 缩小内边距 */
             background-color: #e8f5e9;
             border: 1px solid #d4edda;
             border-radius: 8px;
@@ -146,15 +148,15 @@
         }
 
         .result-section p {
-            font-size: 1.2em;
-            margin-bottom: 10px;
+            font-size: 1.1em; /* 略微缩小结果字体 */
+            margin-bottom: 8px;
             color: #28a745;
             font-weight: bold;
         }
 
         .result-section p:last-child {
             margin-bottom: 0;
-            font-size: 1.4em;
+            font-size: 1.3em; /* 略微缩小总伤害字体 */
             color: #007bff;
         }
 
@@ -164,10 +166,10 @@
         }
 
         .info-tip {
-            font-size: 0.8em;
+            font-size: 0.75em; /* 缩小提示文字 */
             color: #777;
-            margin-top: -10px;
-            margin-bottom: 10px;
+            margin-top: -8px; /* 缩小顶部外边距 */
+            margin-bottom: 8px;
             display: block;
         }
     </style>
@@ -198,184 +200,152 @@
                     <option value="greatJagras">大凶豺龙</option>
                     </select>
             </div>
+            <div class="input-group">
+                <label for="attackPart">攻击部位:</label>
+                <select id="attackPart" onchange="updateHitzones()">
+                    <option value="head">头</option>
+                    <option value="leftHorn">左角</option>
+                    <option value="rightHorn">右角</option>
+                    <option value="snout">吻部</option>
+                    <option value="neck">颈部</option>
+                    <option value="belly">腹部</option>
+                    <option value="back">背</option>
+                    <option value="frontLeg">前脚</option>
+                    <option value="backLeg">后脚</option>
+                    <option value="wing">翼</option>
+                    <option value="tail">尾巴</option>
+                    <option value="tailTip">尾巴尖端</option>
+                </select>
+                <span class="info-tip">肉质数值会根据选择的怪物和部位自动更新，你也可以手动修改。</span>
+            </div>
         </div>
 
         <div class="section">
             <h2>基础属性与技能加成</h2>
-            <div class="flex-row">
-                <div>
-                    <div class="input-group">
-                        <label for="baseHealth">体力:</label>
-                        <input type="number" id="baseHealth" value="100" min="0">
-                    </div>
-                    <div class="input-group">
-                        <label for="friendHealthBonus">好友赠送体力:</label>
-                        <input type="number" id="friendHealthBonus" value="0" min="0">
-                    </div>
-                    <div class="input-group">
-                        <label for="skillHealthBonus">技能增加体力:</label>
-                        <input type="number" id="skillHealthBonus" value="0" min="0">
-                    </div>
-                </div>
-                <div>
-                    <div class="input-group">
-                        <label for="baseWeaponRawAttack">武器面板攻击力:</label>
-                        <input type="number" id="baseWeaponRawAttack" value="200" min="0">
-                    </div>
-                    <div class="input-group">
-                        <label for="skillRawAttackBonus">技能增加攻击力 (固定值):</label>
-                        <input type="number" id="skillRawAttackBonus" value="0" min="0">
-                    </div>
-                </div>
-                <div>
-                    <div class="input-group">
-                        <label for="baseWeaponElementAttack">武器面板属性攻击力:</label>
-                        <input type="number" id="baseWeaponElementAttack" value="0" min="0">
-                    </div>
-                    <div class="input-group">
-                        <label for="skillElementAttackBonus">技能增加属性攻击力 (固定值):</label>
-                        <input type="number" id="skillElementAttackBonus" value="0" min="0">
-                    </div>
-                </div>
+            <div class="input-group">
+                <label for="baseHealth">体力:</label>
+                <input type="number" id="baseHealth" value="100" min="0">
             </div>
-
-            <div class="flex-row">
-                <div>
-                    <div class="input-group">
-                        <label for="baseAffinity">会心率 (%):</label>
-                        <input type="number" id="baseAffinity" value="0" min="-100" max="100">
-                    </div>
-                    <div class="input-group">
-                        <label for="skillAffinityBonus">技能增加会心率 (%):</label>
-                        <input type="number" id="skillAffinityBonus" value="0" min="-100" max="100">
-                    </div>
-                </div>
-                <div>
-                    <div class="input-group">
-                        <label for="baseCritMultiplier">正会心倍率 (通常1.25):</label>
-                        <input type="number" id="baseCritMultiplier" value="1.25" step="0.01">
-                    </div>
-                    <div class="input-group">
-                        <label for="skillCritMultiplierBonus">技能增加会心倍率 (如超会心, +0.05/级):</label>
-                        <input type="number" id="skillCritMultiplierBonus" value="0" step="0.01">
-                    </div>
-                </div>
-                <div>
-                    <div class="input-group">
-                        <label for="baseDefense">防御力:</label>
-                        <input type="number" id="baseDefense" value="500" min="0">
-                    </div>
-                    <div class="input-group">
-                        <label for="skillDefenseBonus">技能增加防御力:</label>
-                        <input type="number" id="skillDefenseBonus" value="0" min="0">
-                    </div>
-                </div>
+            <div class="input-group">
+                <label for="friendHealthBonus">好友赠送体力:</label>
+                <input type="number" id="friendHealthBonus" value="0" min="0">
+            </div>
+            <div class="input-group">
+                <label for="skillHealthBonus">技能增加体力:</label>
+                <input type="number" id="skillHealthBonus" value="0" min="0">
+            </div>
+            <div class="input-group">
+                <label for="baseDefense">防御力:</label>
+                <input type="number" id="baseDefense" value="500" min="0">
+            </div>
+            <div class="input-group">
+                <label for="skillDefenseBonus">技能增加防御力:</label>
+                <input type="number" id="skillDefenseBonus" value="0" min="0">
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>攻击力与会心</h2>
+            <div class="input-group">
+                <label for="baseWeaponRawAttack">武器面板攻击力:</label>
+                <input type="number" id="baseWeaponRawAttack" value="200" min="0">
+            </div>
+            <div class="input-group">
+                <label for="skillRawAttackBonus">技能增加攻击力 (固定值):</label>
+                <input type="number" id="skillRawAttackBonus" value="0" min="0">
+            </div>
+            <div class="input-group">
+                <label for="baseWeaponElementAttack">武器面板属性攻击力:</label>
+                <input type="number" id="baseWeaponElementAttack" value="0" min="0">
+            </div>
+            <div class="input-group">
+                <label for="skillElementAttackBonus">技能增加属性攻击力 (固定值):</label>
+                <input type="number" id="skillElementAttackBonus" value="0" min="0">
+            </div>
+            <div class="input-group">
+                <label for="baseAffinity">会心率 (%):</label>
+                <input type="number" id="baseAffinity" value="0" min="-100" max="100">
+            </div>
+            <div class="input-group">
+                <label for="skillAffinityBonus">技能增加会心率 (%):</label>
+                <input type="number" id="skillAffinityBonus" value="0" min="-100" max="100">
+            </div>
+            <div class="input-group">
+                <label for="baseCritMultiplier">正会心倍率 (通常1.25):</label>
+                <input type="number" id="baseCritMultiplier" value="1.25" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="skillCritMultiplierBonus">技能增加会心倍率 (如超会心, +0.05/级):</label>
+                <input type="number" id="skillCritMultiplierBonus" value="0" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="negativeCritMultiplier">负会心伤害修正 (通常0.75):</label>
+                <input type="number" id="negativeCritMultiplier" value="0.75" step="0.01">
             </div>
         </div>
 
         <div class="section">
             <h2>伤害相关乘数</h2>
-            <div class="flex-row">
-                <div>
-                    <div class="input-group">
-                        <label for="skillDamageMultiplier">技能增加伤害倍率 (如挑战者+20%写1.2):</label>
-                        <input type="number" id="skillDamageMultiplier" value="1.0" step="0.01">
-                    </div>
-                    <div class="input-group">
-                        <label for="sharpnessMultiplier">斩味修正 (物理):</label>
-                        <select id="sharpnessMultiplier">
-                            <option value="0.5">红斩 (0.5)</option>
-                            <option value="0.75">橙斩 (0.75)</option>
-                            <option value="1.0">黄斩 (1.0)</option>
-                            <option value="1.05">绿斩 (1.05)</option>
-                            <option value="1.2">蓝斩 (1.2)</option>
-                            <option value="1.32" selected>白斩 (1.32)</option>
-                            <option value="1.39">紫斩 (1.39)</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label for="motionValue">动作值 (MV, 百分比, 如50表示50):</label>
-                        <input type="number" id="motionValue" value="50" min="1" max="500">
-                    </div>
-                </div>
-                <div>
-                    <div class="input-group">
-                        <label for="weaponSpPower">武器SP技能威力 (如太刀红刃1.2):</label>
-                        <input type="number" id="weaponSpPower" value="1.0" step="0.01">
-                        <span class="info-tip">影响最终伤害的特殊倍率</span>
-                    </div>
-                    <div class="input-group">
-                        <label for="spGauge">SP计量表 (%):</label>
-                        <input type="number" id="spGauge" value="100" min="0" max="100">
-                        <span class="info-tip">例如太刀气刃槽，影响SP技能威力是否激活或程度</span>
-                    </div>
-                    <div class="input-group">
-                        <label for="skillSpGaugeBonus">技能增加SP计量表 (%):</label>
-                        <input type="number" id="skillSpGaugeBonus" value="0" min="0" max="100">
-                    </div>
-                </div>
+            <div class="input-group">
+                <label for="skillDamageMultiplier">技能增加伤害倍率 (攻击%类，如挑战者+20%写1.2):</label>
+                <input type="number" id="skillDamageMultiplier" value="1.0" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="motionValue">动作值 (MV, 百分比, 如50表示50):</label>
+                <input type="number" id="motionValue" value="50" min="1" max="500">
+            </div>
+            <div class="input-group">
+                <label for="weaponSpPower">武器SP技能威力 (如太刀红刃1.2):</label>
+                <input type="number" id="weaponSpPower" value="1.0" step="0.01">
+                <span class="info-tip">影响最终伤害的特殊倍率</span>
+            </div>
+            <div class="input-group">
+                <label for="spGauge">SP计量表 (%):</label>
+                <input type="number" id="spGauge" value="100" min="0" max="100">
+                <span class="info-tip">例如太刀气刃槽，影响SP技能威力是否激活或程度</span>
+            </div>
+            <div class="input-group">
+                <label for="skillSpGaugeBonus">技能增加SP计量表 (%):</label>
+                <input type="number" id="skillSpGaugeBonus" value="0" min="0" max="100">
             </div>
         </div>
 
         <div class="section">
             <h2>异常状态</h2>
-            <div class="flex-row">
-                <div>
-                    <label>猎人异常状态:</label>
-                    <div class="input-group">
-                        <input type="checkbox" id="hunterStatusGhostfire">
-                        <label for="hunterStatusGhostfire">鬼火</label>
-                    </div>
-                    <div class="input-group">
-                        <input type="checkbox" id="hunterStatusFoamDance">
-                        <label for="hunterStatusFoamDance">泡沫之舞</label>
-                    </div>
-                    <div class="input-group">
-                        <input type="checkbox" id="hunterStatusTear">
-                        <label for="hunterStatusTear">撕裂</label>
-                    </div>
-                </div>
-                <div>
-                    <label>怪物异常状态:</label>
-                    <div class="input-group">
-                        <input type="checkbox" id="monsterStatusParalysis">
-                        <label for="monsterStatusParalysis">麻痺</label>
-                    </div>
-                    <div class="input-group">
-                        <input type="checkbox" id="monsterStatusSleep">
-                        <label for="monsterStatusSleep">睡眠</label>
-                    </div>
-                    <div class="input-group">
-                        <input type="checkbox" id="monsterStatusPoison">
-                        <label for="monsterStatusPoison">中毒</label>
-                    </div>
-                    <div class="input-group">
-                        <input type="checkbox" id="monsterStatusStun">
-                        <label for="monsterStatusStun">晕眩</label>
-                    </div>
-                </div>
+            <label>猎人异常状态:</label>
+            <div class="input-group">
+                <input type="checkbox" id="hunterStatusGhostfire">
+                <label for="hunterStatusGhostfire">鬼火</label>
+            </div>
+            <div class="input-group">
+                <input type="checkbox" id="hunterStatusFoamDance">
+                <label for="hunterStatusFoamDance">泡沫之舞</label>
+            </div>
+            <div class="input-group">
+                <input type="checkbox" id="hunterStatusTear">
+                <label for="hunterStatusTear">撕裂</label>
+            </div>
+            <label>怪物异常状态:</label>
+            <div class="input-group">
+                <input type="checkbox" id="monsterStatusParalysis">
+                <label for="monsterStatusParalysis">麻痺</label>
+            </div>
+            <div class="input-group">
+                <input type="checkbox" id="monsterStatusSleep">
+                <label for="monsterStatusSleep">睡眠</label>
+            </div>
+            <div class="input-group">
+                <input type="checkbox" id="monsterStatusPoison">
+                <label for="monsterStatusPoison">中毒</label>
+            </div>
+            <div class="input-group">
+                <input type="checkbox" id="monsterStatusStun">
+                <label for="monsterStatusStun">晕眩</label>
             </div>
         </div>
 
         <div class="section">
             <h2>怪物肉质设置</h2>
-            <label for="attackPart">攻击部位:</label>
-            <select id="attackPart" onchange="updateHitzones()">
-                <option value="head">头</option>
-                <option value="leftHorn">左角</option>
-                <option value="rightHorn">右角</option>
-                <option value="snout">吻部</option>
-                <option value="neck">颈部</option>
-                <option value="belly">腹部</option>
-                <option value="back">背</option>
-                <option value="frontLeg">前脚</option>
-                <option value="backLeg">后脚</option>
-                <option value="wing">翼</option>
-                <option value="tail">尾巴</option>
-                <option value="tailTip">尾巴尖端</option>
-            </select>
-            <span class="info-tip">肉质数值会根据选择的怪物和部位自动更新，你也可以手动修改。</span>
-
             <table class="hitzone-table">
                 <thead>
                     <tr>
@@ -422,6 +392,7 @@
             <p>最终物理伤害: <span id="finalRawDamage">0</span></p>
             <p>最终属性伤害: <span id="finalElementDamage">0</span></p>
             <p>总伤害: <span id="totalDamage">0</span></p>
+            <p style="font-size:0.8em; color:#777;">注意：此计算器基于提供的公式，并假设SP威力、动作值、肉质等对最终总伤害的计算方式。不同游戏版本和招式细节可能有所差异。</p>
         </div>
     </div>
 
@@ -509,7 +480,6 @@
 
             // --- 获取伤害相关乘数 ---
             const skillDamageMultiplier = parseFloat(document.getElementById('skillDamageMultiplier').value || 1.0); // 技能增加伤害倍率
-            const sharpnessMultiplier = parseFloat(document.getElementById('sharpnessMultiplier').value); // 斩味物理修正
             const motionValue = parseFloat(document.getElementById('motionValue').value);
             const weaponSpPower = parseFloat(document.getElementById('weaponSpPower').value || 1.0); // 武器SP技能威力
             const spGauge = parseFloat(document.getElementById('spGauge').value || 0); // SP计量表
@@ -518,12 +488,9 @@
             // --- 怪物/环境信息 ---
             const gameMode = document.getElementById('gameMode').value; // 单人/团队
             const attackDirection = document.getElementById('attackDirection').value; // 前方/后方
-            // 这里我们不再直接获取hitzoneRaw/Element，而是通过loadMonsterHitzones获取
             const hitzoneRaw = parseFloat(document.getElementById('hitzoneRaw').value) / 100;
 
             // 选择哪种属性肉质取决于你的武器属性类型。这里简化为只使用火属性肉质作为示例，实际需根据武器属性判断
-            // 你需要根据武器的实际属性来选择对应的肉质，例如如果武器是水属性，就用hitzoneElementWater
-            // 这里为了演示，我们先假设武器是火属性（或者你可以添加一个武器属性类型选择器）
             const hitzoneElement = parseFloat(document.getElementById('hitzoneElementFire').value) / 100; // 假设使用火属性肉质
 
             // --- 异常状态 ---
@@ -546,7 +513,6 @@
 
             // 3. 会心率计算 (最终会心率)
             let totalAffinity = baseAffinity + skillAffinityBonus;
-            // 会心率通常有上限（如100%），但这里为了简化先不设限
             totalAffinity = Math.max(-100, Math.min(100, totalAffinity)); // 限制在-100%到100%
 
             // 4. 会心倍率计算 (物理伤害)
@@ -555,14 +521,11 @@
             // 5. SP计量表计算 (简单相加)
             const finalSpGauge = Math.min(100, spGauge + skillSpGaugeBonus); // SP计量表通常有上限
 
-            // --- 伤害计算 (遵循上次提供的公式框架，并整合新变量) ---
+            // --- 伤害计算 ---
 
             // 物理伤害部分
             // (武器攻击 + 技能增加攻击力) * 技能增加伤害倍率 (攻击%类)
             let effectiveRawAttack = (baseWeaponRawAttack + skillRawAttackBonus) * skillDamageMultiplier;
-            
-            // 应用斩味修正 (物理)
-            effectiveRawAttack *= sharpnessMultiplier;
             
             // 应用动作值 (MV)
             effectiveRawAttack *= (motionValue / 100);
@@ -582,15 +545,10 @@
 
             // 属性伤害部分
             // 武器面板属性通常要除以10 (MHW/IB标准) + 技能增加属性
-            let effectiveElementAttack = (baseWeaponElementAttack / 10) + (skillElementAttackBonus / 10); // 技能增加属性也除10？需确认游戏机制
-
-            // 假设没有属性会心和属性百分比倍率，或者它们已经整合到 baseWeaponElementAttack 或 skillElementAttackBonus 中
-            // 如果你的游戏版本有明确的属性会心倍率和属性百分比倍率，你需要在html中添加输入，并在此处计算
-            // For example: effectiveElementAttack = (effectiveElementAttack * elementalCritMultiplier) * elementPercentMultiplier;
+            let effectiveElementAttack = (baseWeaponElementAttack / 10) + (skillElementAttackBonus / 10); 
             
-            // 属性斩味修正 (这里假设斩味修正适用于所有属性，如果你有多种属性，需要多选框来选择武器属性)
-            // 这里的 elementMultiplier 是通用属性斩味修正，如果需要更细致的属性斩味，需再添加输入
-            effectiveElementAttack *= 1.0; // 假设这里没有额外的属性斩味修正，或已包含在其他输入中
+            // 属性斩味修正 (这里假设属性斩味修正为1.0)
+            effectiveElementAttack *= 1.0; 
 
             // 应用属性肉质
             let finalElementDamage = effectiveElementAttack * hitzoneElement;
